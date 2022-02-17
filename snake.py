@@ -10,7 +10,7 @@ import threading
 games = []
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, ping_interval=5)
 
 @app.route('/test')
 def test():
