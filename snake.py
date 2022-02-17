@@ -22,15 +22,16 @@ def on_connect(data):
     for game in games:
         if not game.food_sid:
             game.food_sid = request.sid
-            emit('food')
+            emit('role', 'food')
             break
         if not game.sid:
             game.sid = request.sid
+            emit('role', 'snake')
             break
     else:
         print('new game')
         games.append(SnakeGame([40, 40], request.sid))
-        emit('snake')
+        emit('role', 'snake')
 
     join_room(request.sid)
 
