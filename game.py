@@ -17,6 +17,13 @@ class Vector:
             raise ValueError('brug')
         return Vector(self.x + other.x, self.y + other.y)
 
+    def __iadd__(self, other):
+        if not isinstance(other, Vector):
+            raise ValueError('bruh')
+        self.x += other.x
+        self.y += other.y
+        return self
+
     def __eq__(self, other):
         if not isinstance(other, Vector):
             raise ValueError('brug')
@@ -42,9 +49,25 @@ class SnakeGame:
         self.snake = [Vector()]
         self.snake_dir = Vector(1, 0)  # direction of head movement
         self.snake_last_movement = Vector(self.snake_dir.x, self.snake_dir.y)
-        # 2 element list, [x, y] for position of the food
         self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+        self.food_dir = Vector(0, 0)
+        self.food_can_move = False
         self.alive = True
+
+    def set_food_dir(self, dir):
+        """
+        Update direction of movement based on input
+        'up' 'down' 'left' 'right'
+        """
+        with self.lock:
+            if dir == 'up':
+                self.food_dir.set(0, -1)
+            elif dir == 'down':
+                self.food_dir.set(0, 1)
+            elif dir == 'left':
+                self.food_dir.set(-1, 0)
+            elif dir == 'right':
+                self.food_dir.set(1, 0)
 
     def set_snake_dir(self, dir):
         """
@@ -71,10 +94,28 @@ class SnakeGame:
         Snake tail follows segment ahead
         If food is consumed increase length
         """
+        if not self.sid or not self.food_sid:
+            return False
         with self.lock:
+            w, h = self.size
+
             # move the head of the snake
             self.snake.append(self.snake[-1] + self.snake_dir)
             self.snake_last_movement.set(self.snake_dir.x, self.snake_dir.y)
+
+            # move the food
+            if self.food_can_move:
+                self.food += self.food_dir
+            self.food_can_move = not self.food_can_move
+
+            if self.food.x < 0:
+                self.x = 0
+            if self.food.x >= w:
+                self.food.x = w - 1
+            if self.food.y < 0:
+                self.food.y = 0
+            if self.food.y >= h:
+                self.food.y = h - 1
 
             # check if food not at head
             if self.snake[-1] != self.food:
@@ -92,9 +133,9 @@ class SnakeGame:
                     self.alive = False # dead
 
             # check for board boundaries
-            w, h = self.size
-            if head.x < 0 or head.x > w or head.y < 0 or head.y > h:
+            if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
                 self.alive = False
+        return True
 
     def get_data(self):
         """Return dict to send data to client"""
@@ -104,7 +145,7 @@ class SnakeGame:
         d = {
             'snake': snake,
             'food': food,
-            'alive': self.alive,  # not implemented yet
+            'alive': self.alive,
             'width': w,
             'height': h,
         }

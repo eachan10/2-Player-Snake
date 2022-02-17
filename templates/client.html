@@ -7,6 +7,7 @@
         <title>Snake</title>
   </head>
   <body>
+    <p id="user role"></p>
     <canvas id="game_canvas" width="400" height="400" style="border:1px solid; background-color:#c8c8c8;"></canvas>
     <button id="start">Restart</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
@@ -59,6 +60,15 @@
         const start_button = document.getElementById("start");
         start_button.addEventListener("click", () => {
             socket.emit("start");
+        });
+
+        const user_role_p = document.getElementById("user role");
+        socket.on("role", (data) => {
+            if (data == "snake") {
+                user_role_p.innerHTML = "You are the snake";
+            } else if (data == "food") {
+                user_role_p.innerHTML = "You are the food"
+            }
         });
     </script>
   </body>
