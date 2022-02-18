@@ -7,7 +7,7 @@ from time import sleep
 import threading
 
 
-games = []
+games = set()
 
 app = Flask(__name__)
 socketio = SocketIO(app, ping_interval=5)
@@ -32,7 +32,7 @@ def on_connect(data):
     # if no open games, create a new game
     else:
         print('new game')
-        games.append(SnakeGame([40, 40], request.sid))
+        games.add(SnakeGame([40, 40], request.sid))
         emit('role', 'snake')
 
     join_room(request.sid)
@@ -41,14 +41,14 @@ def on_connect(data):
 def disconnect():
     # leave game when a client disconnects
     # delete game if it has no more players
-    to_delete = []
+    to_delete = set()
     for game in games:
         if game.sid == request.sid:
             game.sid = None
         if game.food_sid == request.sid:
             game.food_sid == None
         if game.sid is None and game.food_sid is None:
-            to_delete.append(game)
+            to_delete.add(game)
     for g in to_delete:
         games.remove(g)
     # leave room when a client disconnects
