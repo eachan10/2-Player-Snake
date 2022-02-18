@@ -19,6 +19,7 @@ def test():
 @socketio.on('connect')
 def on_connect(data):
     print(f'joined {request.sid}')
+    # check if any games have available space
     for game in games:
         if not game.food_sid:
             game.food_sid = request.sid
@@ -28,6 +29,7 @@ def on_connect(data):
             game.sid = request.sid
             emit('role', 'snake')
             break
+    # if no open games, create a new game
     else:
         print('new game')
         games.append(SnakeGame([40, 40], request.sid))
@@ -37,7 +39,8 @@ def on_connect(data):
 
 @socketio.event
 def disconnect():
-    # leave room when a client disconnects
+    # leave game when a client disconnects
+    # delete game if it has no more players
     to_delete = []
     for game in games:
         if game.sid == request.sid:
@@ -48,6 +51,7 @@ def disconnect():
             to_delete.append(game)
     for g in to_delete:
         games.remove(g)
+    # leave room when a client disconnects
     room = session.get('room')
     leave_room(room)
     
@@ -61,6 +65,7 @@ def handle_input(data):
             if game.alive:
                 game.set_food_dir(data)
 
+# event fired when client starts a game
 @socketio.on('start')
 def handle_start():
     for game in games:
@@ -71,7 +76,7 @@ def handle_start():
 def game_loop():
     while True:
         for game in games:
-            # update all game states
+            # update all game states and send data to clients
             if game.alive:
                 game.move()
                 data = game.get_data()

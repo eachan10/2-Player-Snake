@@ -18,6 +18,7 @@
         h = canvas.getAttribute("height");
         ctx.clearRect(0, 0, w, h);
         let socket = io();
+        // event fired on an interval to update the game state
         socket.on('game update', (data) => {
             // redraw the game whenever it gets changed
             ctx.clearRect(0, 0, w, h);
@@ -63,6 +64,8 @@
         });
 
         const user_role_p = document.getElementById("user role");
+        // event fired when the client is added to a game
+        // and the server sets the client's role
         socket.on("role", (data) => {
             if (data == "snake") {
                 user_role_p.innerHTML = "You are the snake";
