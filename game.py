@@ -109,7 +109,7 @@ class SnakeGame:
             self.food_can_move = not self.food_can_move
 
             if self.food.x < 0:
-                self.x = 0
+                self.food.x = 0
             if self.food.x >= w:
                 self.food.x = w - 1
             if self.food.y < 0:
