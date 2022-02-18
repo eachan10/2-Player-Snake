@@ -38,11 +38,16 @@ def on_connect(data):
 @socketio.event
 def disconnect():
     # leave room when a client disconnects
+    to_delete = []
     for game in games:
         if game.sid == request.sid:
             game.sid = None
         if game.food_sid == request.sid:
             game.food_sid == None
+        if game.sid is None and game.food_sid is None:
+            to_delete.append(game)
+    for g in to_delete:
+        games.remove(g)
     room = session.get('room')
     leave_room(room)
     
