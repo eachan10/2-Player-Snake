@@ -1,7 +1,7 @@
 # game logic
 
 import random
-import threading
+from gevent.lock import BoundedSemaphore
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -31,11 +31,11 @@ class Vector:
 
 
 class SnakeGame:
-    def __init__(self, size, sid):
-        self.size = size  # dimensions of game tuple/list [x, y]
-        self.sid = sid  # session id of snake player
+    def __init__(self, size=None):
+        self.size = size or (20,20)  # dimensions of game tuple/list [x, y]
+        self.sid = None  # session id of snake player
         self.food_sid = None  # session id of the food player
-        self.lock = threading.Lock()
+        self.lock = BoundedSemaphore()
 
         # set all variables but don't actually start yet
         self.start()
@@ -88,7 +88,7 @@ class SnakeGame:
                 # go right as long as dir isn't left
                 self.snake_dir.set(1, 0)
 
-    def move(self):
+    def next_loop(self):
         """
         Move snake head in current direction
         Snake tail follows segment ahead
@@ -145,8 +145,8 @@ class SnakeGame:
         d = {
             'snake': snake,
             'food': food,
-            'alive': self.alive,
             'width': w,
             'height': h,
+            'status': None,
         }
         return d
