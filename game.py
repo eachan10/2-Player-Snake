@@ -14,36 +14,35 @@ class Vector:
 
     def __add__(self, other):
         if not isinstance(other, Vector):
-            raise ValueError('brug')
+            return NotImplemented
         return Vector(self.x + other.x, self.y + other.y)
 
     def __iadd__(self, other):
         if not isinstance(other, Vector):
-            raise ValueError('bruh')
+            return NotImplemented
         self.x += other.x
         self.y += other.y
         return self
 
     def __eq__(self, other):
         if not isinstance(other, Vector):
-            raise ValueError('brug')
+            return NotImplemented
         return self.x == other.x and self.y == other.y
 
 
 class SnakeGame:
     def __init__(self, size=None):
-        self.size = size or (20,20)  # dimensions of game tuple/list [x, y]
-        self.sid = None  # session id of snake player
+        self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
+        self.snake_sid = None  # session id of snake player
         self.food_sid = None  # session id of the food player
+        self.ready = [False, False]  # ready states for snake and food [snake, food]
         self.lock = BoundedSemaphore()
 
         # set all variables but don't actually start yet
-        self.start()
+        self.reset()
         self.alive = False
 
-    def start(self):
-        if not self.food_sid or not self.sid:
-            return False
+    def reset(self):
         # positions of each snake piece
         # last element is head
         self.snake = [Vector()]
@@ -53,38 +52,39 @@ class SnakeGame:
         self.food_dir = Vector(0, 0)
         self.food_can_move = False
         self.alive = True
+        self.ready = [False, False]
 
     def set_food_dir(self, dir):
         """
         Update direction of movement based on input
-        'up' 'down' 'left' 'right'
+        'u' 'd' 'l' 'r'
         """
         with self.lock:
-            if dir == 'up':
+            if dir == 'u':
                 self.food_dir.set(0, -1)
-            elif dir == 'down':
+            elif dir == 'd':
                 self.food_dir.set(0, 1)
-            elif dir == 'left':
+            elif dir == 'l':
                 self.food_dir.set(-1, 0)
-            elif dir == 'right':
+            elif dir == 'r':
                 self.food_dir.set(1, 0)
 
     def set_snake_dir(self, dir):
         """
         Update direction of movement based on input
-        'up' 'down' 'left' 'right'
+        'u' 'd' 'l' 'r'
         """
         with self.lock:
-            if dir == 'up' and self.snake_last_movement.y != 1:
+            if dir == 'u' and self.snake_last_movement.y != 1:
                 # go up as long as dir isn't down
                 self.snake_dir.set(0, -1)
-            elif dir == 'down' and self.snake_last_movement.y != -1:
+            elif dir == 'd' and self.snake_last_movement.y != -1:
                 # go down as long as dir isn't up
                 self.snake_dir.set(0, 1)
-            elif dir == 'left' and self.snake_last_movement.x != 1:
+            elif dir == 'l' and self.snake_last_movement.x != 1:
                 # go left as long as dir isn't right
                 self.snake_dir.set(-1, 0)
-            elif dir == 'right' and self.snake_last_movement.x != -1:
+            elif dir == 'r' and self.snake_last_movement.x != -1:
                 # go right as long as dir isn't left
                 self.snake_dir.set(1, 0)
 
@@ -94,8 +94,9 @@ class SnakeGame:
         Snake tail follows segment ahead
         If food is consumed increase length
         """
-        if not self.sid or not self.food_sid:
-            return False
+        # if not self.snake_sid or not self.food_sid:
+        #     return False
+
         with self.lock:
             w, h = self.size
 
@@ -106,7 +107,7 @@ class SnakeGame:
             # move the food
             if self.food_can_move:
                 self.food += self.food_dir
-            self.food_can_move = not self.food_can_move
+            self.food_can_move = not self.food_can_move  # toggles so food moves every other frame
 
             if self.food.x < 0:
                 self.food.x = 0
@@ -135,7 +136,6 @@ class SnakeGame:
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
                 self.alive = False
-        return True
 
     def get_data(self):
         """Return dict to send data to client"""
@@ -147,6 +147,6 @@ class SnakeGame:
             'food': food,
             'width': w,
             'height': h,
-            'status': None,
+            'alive': self.alive,
         }
         return d
