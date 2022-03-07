@@ -5,8 +5,6 @@ let alive = false;
 
 const canvas = document.getElementById("game_canvas");
 const ctx = canvas.getContext("2d");
-ctx.textAlign = "center";
-ctx.font = "48px Georgia";
 w = canvas.getAttribute("width");
 h = canvas.getAttribute("height");
 ctx.clearRect(0, 0, w, h);
@@ -56,15 +54,31 @@ socket.on('game update', (data) => {
     } else {
         console.log("dead");
         alive = false;
-        console.log(w/2, h/2);
+        ctx.textAlign = "center";
+        ctx.font = "48px Georgia";
+        ctx.fillStyle = "#000";
         ctx.fillText("Game Over", w / 2, h / 2);
         ready_button.disabled = false;
     }
 });
-socket.on("expired", (homeURL) => {
+socket.on("expired", () => {
     console.log("expired");
     // the room doesn't exist on server
-    document.location.href = homeURL;
+    document.location.href = "/home";
+});
+socket.on("role", (role) => {
+    if (role == "snake") {
+        document.getElementById("role").innerHTML = "You are: snake"
+    } else if (role == "food") {
+        document.getElementById("role").innerHTML = "You are: food"
+    }
+});
+socket.on("starting", () => {
+    ctx.clearRect(0, 0, w, h);
+    ctx.textAlign = "center";
+    ctx.font = "24px Georgia";
+    ctx.fillStyle = "#000";
+    ctx.fillText("Starting in a moment", 200, 200);
 });
 document.addEventListener("keydown", (e) => {
     if (!alive) {

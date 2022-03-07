@@ -1,7 +1,7 @@
 # game logic
 
 import random
-from gevent.lock import BoundedSemaphore
+from eventlet.semaphore import Semaphore
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -36,7 +36,7 @@ class SnakeGame:
         self.snake_sid = None  # session id of snake player
         self.food_sid = None  # session id of the food player
         self.ready = [False, False]  # ready states for snake and food [snake, food]
-        self.lock = BoundedSemaphore()
+        self.lock = Semaphore()
 
         # set all variables but don't actually start yet
         self.reset()
@@ -53,6 +53,7 @@ class SnakeGame:
         self.food_can_move = False
         self.alive = True
         self.ready = [False, False]
+        self.winner = None
 
     def set_food_dir(self, dir):
         """
@@ -148,5 +149,6 @@ class SnakeGame:
             'width': w,
             'height': h,
             'alive': self.alive,
+            'winner': self.winner
         }
         return d

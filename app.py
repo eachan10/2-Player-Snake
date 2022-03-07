@@ -1,6 +1,5 @@
 from flask import abort, Flask, redirect, render_template, request, url_for
 from flask_socketio import SocketIO, join_room, emit, disconnect
-import gevent
 
 from string import ascii_letters, digits
 from random import choices
@@ -33,28 +32,41 @@ def home():
 def room(game_id):
     # room not created
     if game_id not in app.rooms:
-        return render_template('noroom.html')
+        return redirect('/noroom')
     game = app.rooms.get(game_id)
-    # new room
-    if game is None:
-        return render_template('room.html')
-    # room already has players
-    if game.snake_id is not None:  # and game.food_id is not None -- to add when multiplayer
-        return render_template('fullroom.html')
+    # room already has players for food and snake
+    if game is not None and game.snake_sid is not None and game.food_sid is not None:
+        return redirect('/fullroom')
+    # room exists or game exists and is not full
+    return render_template('room.html')
     
+@app.route('/noroom')
+def noroom():
+    return render_template('noroom.html')
+
+@app.route('/fullroom')
+def fullroom():
+    return render_template('fullroom.html')
 
 @io.on('new con')
 def on_new_con(room_id):
     print(f'New connection from {request.sid}')
-    if app.rooms.get(room_id, None) is not None:
-        disconnect()  # no point in having this for now
-        pass  # will implement for multiplyaer to allow second player to join a game
+    game = app.rooms.get(room_id, None)
+    # if game full already the app route should have denied access already
+    if game is not None:  # room exists already
+        if game.snake_sid is None:
+            game.snake_sid = request.sid
+            emit('role', 'snake')
+        elif game.food_sid is None:
+            game.food_sid = request.sid
+            emit('role', 'food')
     else:
         # the first connection to this game creates a game
         # and sets the snake to this user
         app.rooms[room_id] = SnakeGame()
-        app.rooms[room_id].snake_id = request.sid
-        join_room(room_id)
+        app.rooms[room_id].snake_sid = request.sid
+        emit('role', 'snake')
+    join_room(room_id)
 
 @io.on('ready')
 def on_start(room_id):
@@ -64,34 +76,37 @@ def on_start(room_id):
     except KeyError:
         # connected client to nonexistent game id
         # maybe game deleted after inactivity
-        emit('expired', url_for('home'))  # replace with a 404 page to say game not found
+        emit('expired')  # replace with a 404 page to say game not found
         return
     game = app.rooms[room_id]
 
-    if game.snake_id == request.sid:
+    if game.snake_sid == request.sid:
         game.ready[0] = True
-    elif game.food_id == request.sid:
+    elif game.food_sid == request.sid:
         game.ready[1] = True
-    # TEMP TEMP TEMP
-    game.ready[1] = True  # only cuz single player atm
     if not all(game.ready):
         return
-    gevent.sleep(5)
+    emit('starting', room=room_id)
+    io.sleep(5)
     print('start')
     game.reset()
     def update():
         while game.alive:
             game.next_loop()
             io.emit('game update', game.get_data(), room=room_id)
-            gevent.sleep(0.2)
+            io.sleep(0.1)
         print('game over')
-    gevent.spawn(update)
+    io.start_background_task(update)
 
 @io.on('user input')
 def on_user_input(data):
     game_id = data['game_id']
     direction = data['direction']
-    app.rooms[game_id].set_snake_dir(direction)
+    game = app.rooms[game_id]
+    if request.sid == game.snake_sid:
+        app.rooms[game_id].set_snake_dir(direction)
+    elif request.sid == game.food_sid:
+        app.rooms[game_id].set_food_dir(direction)
     
 
 if __name__ == '__main__':
