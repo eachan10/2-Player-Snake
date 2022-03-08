@@ -45,11 +45,11 @@ class SnakeGame:
         # positions of each snake piece
         # last element is head
         self.snake = [Vector()]
-        self.snake_dir = Vector(1, 0)
-        self.snake_last_movement = Vector(self.snake_dir.x, self.snake_dir.y)
+        self._snake_dir = Vector(1, 0)
+        self._snake_last_movement = Vector(self._snake_dir.x, self._snake_dir.y)
         self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
-        self.food_dir = Vector(0, 0)
-        self.food_can_move = False
+        self._food_dir = Vector(0, 0)
+        self._food_can_move = False
         self.ready = [False, False]
         self.winner = None
 
@@ -60,13 +60,13 @@ class SnakeGame:
         """
         with self._lock:
             if dir == 'u':
-                self.food_dir.set(0, -1)
+                self._food_dir.set(0, -1)
             elif dir == 'd':
-                self.food_dir.set(0, 1)
+                self._food_dir.set(0, 1)
             elif dir == 'l':
-                self.food_dir.set(-1, 0)
+                self._food_dir.set(-1, 0)
             elif dir == 'r':
-                self.food_dir.set(1, 0)
+                self._food_dir.set(1, 0)
 
     def set_snake_dir(self, dir):
         """
@@ -74,18 +74,18 @@ class SnakeGame:
         'u' 'd' 'l' 'r'
         """
         with self._lock:
-            if dir == 'u' and self.snake_last_movement.y != 1:
+            if dir == 'u' and self._snake_last_movement.y != 1:
                 # go up as long as dir isn't down
-                self.snake_dir.set(0, -1)
-            elif dir == 'd' and self.snake_last_movement.y != -1:
+                self._snake_dir.set(0, -1)
+            elif dir == 'd' and self._snake_last_movement.y != -1:
                 # go down as long as dir isn't up
-                self.snake_dir.set(0, 1)
-            elif dir == 'l' and self.snake_last_movement.x != 1:
+                self._snake_dir.set(0, 1)
+            elif dir == 'l' and self._snake_last_movement.x != 1:
                 # go left as long as dir isn't right
-                self.snake_dir.set(-1, 0)
-            elif dir == 'r' and self.snake_last_movement.x != -1:
+                self._snake_dir.set(-1, 0)
+            elif dir == 'r' and self._snake_last_movement.x != -1:
                 # go right as long as dir isn't left
-                self.snake_dir.set(1, 0)
+                self._snake_dir.set(1, 0)
 
     def next_loop(self):
         """
@@ -100,13 +100,13 @@ class SnakeGame:
             w, h = self.size
 
             # move the head of the snake
-            self.snake.append(self.snake[-1] + self.snake_dir)
-            self.snake_last_movement.set(self.snake_dir.x, self.snake_dir.y)
+            self.snake.append(self.snake[-1] + self._snake_dir)
+            self._snake_last_movement.set(self._snake_dir.x, self._snake_dir.y)
 
             # move the food
-            if self.food_can_move:
-                self.food += self.food_dir
-            self.food_can_move = not self.food_can_move  # toggles so food moves every other frame
+            if self._food_can_move:
+                self.food += self._food_dir
+            self._food_can_move = not self._food_can_move  # toggles so food moves every other frame
 
             if self.food.x < 0:
                 self.food.x = 0
@@ -125,7 +125,7 @@ class SnakeGame:
                 # don't remove end if snake ate food
                 while self.food in self.snake:
                     self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
-                    self.food_dir.set(0, 0)
+                    self._food_dir.set(0, 0)
 
             head = self.snake[-1]
             # check for self collision
