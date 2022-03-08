@@ -34,8 +34,8 @@ socket.on('game update', (data) => {
     }
     // redraw the game whenever it gets changed
     ctx.clearRect(0, 0, w, h);
-
-    const g_alive = data.alive;  // whether the game is active or not
+    console.log(data);
+    const g_alive = data.winner == null;  // whether the game is active or not
     if (g_alive) {
         const snake = data.snake;
         const food = data.food;
