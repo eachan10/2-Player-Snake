@@ -91,7 +91,7 @@ def on_start(room_id):
     print('start')
     game.reset()
     def update():
-        while game.alive:
+        while game.winner is None:
             game.next_loop()
             io.emit('game update', game.get_data(), room=room_id)
             io.sleep(0.1)

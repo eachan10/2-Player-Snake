@@ -36,22 +36,20 @@ class SnakeGame:
         self.snake_sid = None  # session id of snake player
         self.food_sid = None  # session id of the food player
         self.ready = [False, False]  # ready states for snake and food [snake, food]
-        self.lock = Semaphore()
+        self._lock = Semaphore()
 
         # set all variables but don't actually start yet
         self.reset()
-        self.alive = False
 
     def reset(self):
         # positions of each snake piece
         # last element is head
         self.snake = [Vector()]
-        self.snake_dir = Vector(1, 0)  # direction of head movement
+        self.snake_dir = Vector(1, 0)
         self.snake_last_movement = Vector(self.snake_dir.x, self.snake_dir.y)
         self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
         self.food_dir = Vector(0, 0)
         self.food_can_move = False
-        self.alive = True
         self.ready = [False, False]
         self.winner = None
 
@@ -60,7 +58,7 @@ class SnakeGame:
         Update direction of movement based on input
         'u' 'd' 'l' 'r'
         """
-        with self.lock:
+        with self._lock:
             if dir == 'u':
                 self.food_dir.set(0, -1)
             elif dir == 'd':
@@ -75,7 +73,7 @@ class SnakeGame:
         Update direction of movement based on input
         'u' 'd' 'l' 'r'
         """
-        with self.lock:
+        with self._lock:
             if dir == 'u' and self.snake_last_movement.y != 1:
                 # go up as long as dir isn't down
                 self.snake_dir.set(0, -1)
@@ -98,7 +96,7 @@ class SnakeGame:
         # if not self.snake_sid or not self.food_sid:
         #     return False
 
-        with self.lock:
+        with self._lock:
             w, h = self.size
 
             # move the head of the snake
@@ -127,16 +125,17 @@ class SnakeGame:
                 # don't remove end if snake ate food
                 while self.food in self.snake:
                     self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+                    self.food_dir.set(0, 0)
 
             head = self.snake[-1]
             # check for self collision
             for body in self.snake[:-1]:
                 if body == head:
-                    self.alive = False # dead
+                    self.winner = 'snake'
 
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
-                self.alive = False
+                self.winner = 'snake'
 
     def get_data(self):
         """Return dict to send data to client"""
@@ -148,7 +147,6 @@ class SnakeGame:
             'food': food,
             'width': w,
             'height': h,
-            'alive': self.alive,
             'winner': self.winner
         }
         return d
