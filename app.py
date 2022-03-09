@@ -60,11 +60,9 @@ def on_new_con(room_id):
     if game is not None:  # room exists already
         if game.snake_sid is None:
             game.snake_sid = request.sid
-            game.snake_last_ping = time()
             emit('role', 'snake')
         elif game.food_sid is None:
             game.food_sid = request.sid
-            game.food_last_ping = time()
             emit('role', 'food')
     else:
         # the first connection to this game creates a game
