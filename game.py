@@ -34,14 +34,13 @@ class Vector:
 class SnakeGame:
     def __init__(self, size=None):
         self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
-        self.snake_sid = None  # session id of snake player
+        self.snake_sid = None
         self.snake_recent_ping = 0
-        self.food_sid = None  # session id of the food player
+        self.food_sid = None
         self.food_recent_ping = 0
         self.ready = [False, False]  # ready states for snake and food [snake, food]
         self._lock = Semaphore()
 
-        # set all variables but don't actually start yet
         self.reset()
 
     def reset(self):
@@ -55,6 +54,7 @@ class SnakeGame:
         self._food_can_move = False
         self.ready = [False, False]
         self.winner = None
+        self.frame_count = 0
 
     def set_food_dir(self, dir):
         """
@@ -78,16 +78,12 @@ class SnakeGame:
         """
         with self._lock:
             if dir == 'u' and self._snake_last_movement.y != 1:
-                # go up as long as dir isn't down
                 self._snake_dir.set(0, -1)
             elif dir == 'd' and self._snake_last_movement.y != -1:
-                # go down as long as dir isn't up
                 self._snake_dir.set(0, 1)
             elif dir == 'l' and self._snake_last_movement.x != 1:
-                # go left as long as dir isn't right
                 self._snake_dir.set(-1, 0)
             elif dir == 'r' and self._snake_last_movement.x != -1:
-                # go right as long as dir isn't left
                 self._snake_dir.set(1, 0)
 
     def next_loop(self):
@@ -100,6 +96,7 @@ class SnakeGame:
             return False
 
         with self._lock:
+            self.frame_count += 1
             w, h = self.size
 
             # move the head of the snake
@@ -109,20 +106,11 @@ class SnakeGame:
             # move the food
             if self._food_can_move:
                 self.food += self._food_dir
-            self._food_can_move = not self._food_can_move  # toggles so food moves every other frame
+            self._food_can_move = not self._food_can_move
 
-            if self.food.x < 0:
-                self.food.x = 0
-            if self.food.x >= w:
-                self.food.x = w - 1
-            if self.food.y < 0:
-                self.food.y = 0
-            if self.food.y >= h:
-                self.food.y = h - 1
-
+            # move the body
             # check if food not at head
             if self.snake[-1] != self.food:
-                # remove end from snake
                 self.snake.pop(0)
             else:
                 # don't remove end if snake ate food
@@ -130,14 +118,28 @@ class SnakeGame:
                     self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
                     self._food_dir.set(0, 0)
 
+            # check if the game is over
+
             head = self.snake[-1]
-            # check for self collision
+            # self collision of snake
             for body in self.snake[:-1]:
                 if body == head:
                     self.winner = 'snake'
 
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
+                self.winner = 'food'
+            if self.food.x < 0 or self.food.x >= w or self.food.y < 0 or self.food.y >= h:
+                if not self.winner:
+                    self.winner = 'snake'
+                else:
+                    self.winner = 'draw'
+                
+            # snake loses to clock
+            if self.frame_count > 3000:
+                self.winner = 'food'
+            # food eaten too many times
+            if len(self.snake) > 10:
                 self.winner = 'snake'
         return True
 

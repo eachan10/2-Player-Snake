@@ -29,15 +29,12 @@ socket.on('game update', (data) => {
     }
     // redraw the game whenever it gets changed
     ctx.clearRect(0, 0, w, h);
-    console.log(data);
     const g_alive = data.winner == null;  // whether the game is active or not
     if (g_alive) {
         const snake = data.snake;
         const food = data.food;
-        const game_w = data.width;
-        const game_h = data.height;
-        const x_scale = w / game_w;
-        const y_scale = h / game_h;
+        const x_scale = w / data.width;
+        const y_scale = h / data.height;
         // draw the snake body
         ctx.fillStyle = "#7a7a7a";
         for (const pos of snake) {
@@ -48,14 +45,32 @@ socket.on('game update', (data) => {
         ctx.fillRect(food[0] * x_scale, food[1] * y_scale, x_scale, y_scale);
     } else {
         console.log("dead");
-        alive = false;
+        alive = false;;
         ctx.textAlign = "center";
         ctx.font = "48px Georgia";
         ctx.fillStyle = "#000";
-        ctx.fillText("Game Over", w / 2, h / 2);
+        let t;
+        console.log(data.winner);
+        switch (data.winner) {
+            case "snake":
+                t = "Snake wins";
+                break;
+            case "food":
+                t = "Food wins";
+                break;
+            case "draw":
+                t = "Draw";
+                break;
+        }
+        ctx.fillText("Game Over", w / 2, h / 2 - 20);
+        ctx.fillText(t, w / 2, h / 2 + 20);
         ready_button.disabled = false;
     }
 });
+
+// 0 3 4 7 11 13 15 17 21 33
+//     ^ ^ ^
+// yes faster  
 
 socket.on("expired", () => {
     console.log("expired");

@@ -133,6 +133,6 @@ def on_disconnect():
 
 if __name__ == '__main__':
     try:
-        io.run(app, debug=True)
+        io.run(app)
     except KeyboardInterrupt:
         print('Killed')
