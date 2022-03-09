@@ -132,7 +132,6 @@ def on_disconnect():
 
 
 if __name__ == '__main__':
-    try:
-        io.run(app)
-    except KeyboardInterrupt:
-        print('Killed')
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    io.run(app, host='0.0.0.0', port=port)
