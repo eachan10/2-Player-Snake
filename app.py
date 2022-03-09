@@ -21,19 +21,22 @@ def home():
     if request.method == 'GET':
         return render_template('home.html')
     elif request.method == 'POST':
-        while 1:
-            game_id = ''.join(choices(ascii_letters + digits, k=4))
-            if game_id not in app.rooms:
-                break
-        app.rooms[game_id] = None
-        return redirect(url_for('room', game_id=game_id))
+        room_id = request.form.get('room_id')
+        if room_id is None:
+            while 1:
+                room_id = ''.join(choices(ascii_letters + digits, k=4))
+                if room_id not in app.rooms:
+                    break
+            app.rooms[room_id] = None
+            return redirect(url_for('room', room_id=room_id))
+        return redirect(url_for('room', room_id=room_id))
 
-@app.route('/room/<game_id>')
-def room(game_id):
+@app.route('/room/<room_id>')
+def room(room_id):
     # room not created
-    if game_id not in app.rooms:
+    if room_id not in app.rooms:
         return redirect('/noroom')
-    game = app.rooms.get(game_id)
+    game = app.rooms.get(room_id)
     # room already has players for food and snake
     if game is not None and game.snake_sid is not None and game.food_sid is not None:
         return redirect('/fullroom')

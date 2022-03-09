@@ -4,10 +4,14 @@
     </head>
     <body>
         <form method="post">
-            <input type="submit" value="New Game"/>
+            <input type="submit" value="New Game">
         </form>
-        
-        <button id="join_game">Join Game</button>
+        <br>
+        <form method="post">
+            <label for="room_id">Room ID:</label>
+            <input type="text" id="room_id" name="room_id" required>
+            <input type="submit" value="Join Game">
+        </form>
 
         <!-- <script src="{{ url_for('static', filename='home.js')}}"></script> -->
     </body>
