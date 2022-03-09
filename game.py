@@ -32,6 +32,9 @@ class Vector:
 
 
 class SnakeGame:
+    WINNING_FRAME_COUNT = 5000
+    WINNING_SNAKE_LENGTH = 20
+
     def __init__(self, size=None):
         self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
         self.snake_sid = None
@@ -136,10 +139,10 @@ class SnakeGame:
                     self.winner = 'draw'
                 
             # snake loses to clock
-            if self.frame_count > 3000:
+            if self.frame_count > self.WINNING_FRAME_COUNT:
                 self.winner = 'food'
             # food eaten too many times
-            if len(self.snake) > 10:
+            if len(self.snake) > self.WINNING_SNAKE_LENGTH:
                 self.winner = 'snake'
         return True
 
