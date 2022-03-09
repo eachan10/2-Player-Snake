@@ -19,11 +19,6 @@ ready_button.addEventListener("click", () => {
     ready_button.disabled = true;
 });
 
-// disconnect could happen if the game room is full alread
-socket.on("disconnect", () => {
-    window.location.href = "/home";
-});
-
 // event fired on an interval to update the game state
 socket.on('game update', (data) => {
     // after starting a game the first update will set alive to true
@@ -61,11 +56,13 @@ socket.on('game update', (data) => {
         ready_button.disabled = false;
     }
 });
+
 socket.on("expired", () => {
     console.log("expired");
     // the room doesn't exist on server
     document.location.href = "/home";
 });
+
 socket.on("role", (role) => {
     if (role == "snake") {
         document.getElementById("role").innerHTML = "You are: snake"
@@ -73,6 +70,7 @@ socket.on("role", (role) => {
         document.getElementById("role").innerHTML = "You are: food"
     }
 });
+
 socket.on("starting", () => {
     ctx.clearRect(0, 0, w, h);
     ctx.textAlign = "center";
@@ -80,6 +78,21 @@ socket.on("starting", () => {
     ctx.fillStyle = "#000";
     ctx.fillText("Starting in a moment", 200, 200);
 });
+
+socket.on("opponent dc", () => {
+    alive = false;
+    ready_button.disabled = false;
+    ctx.clearRect(0, 0, w, h);
+    ctx.textAlign = "center";
+    ctx.font = "24px Georgia";
+    ctx.fillStyle = "#000";
+    ctx.fillText("Opponent Disconnected", 200, 200);
+});
+
+socket.on("disconnect", () => {
+    document.location.href = "/disconnected"
+});
+
 document.addEventListener("keydown", (e) => {
     if (!alive) {
         return;

@@ -9,7 +9,7 @@ from game import SnakeGame
 
 app = Flask(__name__)
 app.rooms = {}  # dictionary of game rooms
-io = SocketIO(app)
+io = SocketIO(app, ping_interval=3, ping_timeout=10)
 
 
 @app.route('/')
@@ -48,6 +48,10 @@ def noroom():
 def fullroom():
     return render_template('fullroom.html')
 
+@app.route('/disconnected')
+def disconnected():
+    return render_template('disconnected.html')
+
 @io.on('new con')
 def on_new_con(room_id):
     print(f'New connection from {request.sid}')
@@ -56,9 +60,11 @@ def on_new_con(room_id):
     if game is not None:  # room exists already
         if game.snake_sid is None:
             game.snake_sid = request.sid
+            game.snake_last_ping = time()
             emit('role', 'snake')
         elif game.food_sid is None:
             game.food_sid = request.sid
+            game.food_last_ping = time()
             emit('role', 'food')
     else:
         # the first connection to this game creates a game
@@ -92,8 +98,10 @@ def on_start(room_id):
     game.reset()
     def update():
         while game.winner is None:
-            game.next_loop()
-            io.emit('game update', game.get_data(), room=room_id)
+            if game.next_loop():
+                io.emit('game update', game.get_data(), room=room_id)
+            else:
+                io.emit('opponent dc', room=room_id)
             io.sleep(0.1)
         print('game over')
     io.start_background_task(update)
@@ -107,7 +115,23 @@ def on_user_input(data):
         app.rooms[game_id].set_snake_dir(direction)
     elif request.sid == game.food_sid:
         app.rooms[game_id].set_food_dir(direction)
-    
+
+# client tell server it's alive
+@io.on('disconnect')
+def on_disconnect():
+    to_del = []
+    for room_id, game in app.rooms.items():
+        if game.snake_sid == request.sid:
+            game.snake_sid = None
+        elif game.food_sid == request.sid:
+            game.food_sid = None
+        if game.snake_sid is None and game.food_sid is None:
+            to_del.append(room_id)
+        else:
+            game.reset()
+    for td in to_del:
+        del app.rooms[td]
+
 
 if __name__ == '__main__':
     try:

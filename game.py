@@ -34,7 +34,9 @@ class SnakeGame:
     def __init__(self, size=None):
         self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
         self.snake_sid = None  # session id of snake player
+        self.snake_recent_ping = 0
         self.food_sid = None  # session id of the food player
+        self.food_recent_ping = 0
         self.ready = [False, False]  # ready states for snake and food [snake, food]
         self._lock = Semaphore()
 
@@ -93,8 +95,8 @@ class SnakeGame:
         Snake tail follows segment ahead
         If food is consumed increase length
         """
-        # if not self.snake_sid or not self.food_sid:
-        #     return False
+        if not self.snake_sid or not self.food_sid:
+            return False
 
         with self._lock:
             w, h = self.size
@@ -136,6 +138,7 @@ class SnakeGame:
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
                 self.winner = 'snake'
+        return True
 
     def get_data(self):
         """Return dict to send data to client"""
