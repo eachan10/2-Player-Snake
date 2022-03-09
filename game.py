@@ -127,7 +127,7 @@ class SnakeGame:
             # self collision of snake
             for body in self.snake[:-1]:
                 if body == head:
-                    self.winner = 'snake'
+                    self.winner = 'food'
 
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
