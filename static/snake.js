@@ -9,6 +9,9 @@ w = canvas.getAttribute("width");
 h = canvas.getAttribute("height");
 ctx.clearRect(0, 0, w, h);
 
+const snake_length_p = document.getElementById("snake_length");
+const game_timer_p = document.getElementById("game_timer");
+
 let socket = io();
 socket.emit("new con", room_id)
 
@@ -43,6 +46,9 @@ socket.on('game update', (data) => {
         // draw the food
         ctx.fillStyle = "#d61b1b";
         ctx.fillRect(food[0] * x_scale, food[1] * y_scale, x_scale, y_scale);
+
+        game_timer_p.innerHTML = "Frame Count: " + data.frame_count;
+        snake_length_p.innerHTML = "Snake Length: " + snake.length;
     } else {
         console.log("dead");
         alive = false;;
@@ -67,10 +73,6 @@ socket.on('game update', (data) => {
         ready_button.disabled = false;
     }
 });
-
-// 0 3 4 7 11 13 15 17 21 33
-//     ^ ^ ^
-// yes faster  
 
 socket.on("expired", () => {
     console.log("expired");

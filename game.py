@@ -38,9 +38,7 @@ class SnakeGame:
     def __init__(self, size=None):
         self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
         self.snake_sid = None
-        self.snake_recent_ping = 0
         self.food_sid = None
-        self.food_recent_ping = 0
         self.ready = [False, False]  # ready states for snake and food [snake, food]
         self._lock = Semaphore()
 
@@ -156,6 +154,7 @@ class SnakeGame:
             'food': food,
             'width': w,
             'height': h,
-            'winner': self.winner
+            'winner': self.winner,
+            'frame_count': self.frame_count,
         }
         return d

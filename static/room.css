@@ -1,0 +1,13 @@
+.container {
+    background-color: #999;
+}
+.parent {
+    display: inline-block;
+}
+#game_timer {
+    float: left;
+}
+
+#snake_length {
+    float: right;
+}

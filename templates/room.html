@@ -1,14 +1,22 @@
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='room.css') }}">
         <title>2 Player Snek - Game</title>
     </head>
     <body>
-        <canvas id="game_canvas" width="400" height="400" style="border:1px solid; background-color:#c8c8c8;"></canvas>
-        <div>
-            <button id="ready_button">Ready</button>
-            <p>AWSD to move</p>
-            <p id="role"></p>
+        <div class="parent">
+            <div class="container">
+                <div id="game_timer"></div>
+                <div id="snake_length"></div>
+            </div>
+            <canvas id="game_canvas" width="400" height="400" style="border:1px solid; background-color:#c8c8c8;"></canvas>
+            <div>
+                <button id="ready_button">Ready</button>
+                <p>AWSD to move</p>
+                <p id="role"></p>
+            </div>
         </div>
+        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
         <script src="{{ url_for('static', filename='snake.js')}}"></script>
     </body>
