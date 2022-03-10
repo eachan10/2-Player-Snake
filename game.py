@@ -51,6 +51,7 @@ class SnakeGame:
         self._snake_dir = Vector(1, 0)
         self._snake_last_movement = Vector(self._snake_dir.x, self._snake_dir.y)
         self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+        self._food_last_pos = Vector(self.food.x, self.food.y)
         self._food_dir = Vector(0, 0)
         self._food_can_move = False
         self.ready = [False, False]
@@ -106,18 +107,23 @@ class SnakeGame:
 
             # move the food
             if self._food_can_move:
+                self._food_last_pos.set(self.food.x, self.food.y)
                 self.food += self._food_dir
             self._food_can_move = not self._food_can_move
 
             # move the body
             # check if food not at head
-            if self.snake[-1] != self.food:
-                self.snake.pop(0)
-            else:
+            if self.snake[-1] == self.food:
                 # don't remove end if snake ate food
                 while self.food in self.snake:
                     self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
                     self._food_dir.set(0, 0)
+            else:
+                self.snake.pop(0)
+                if self.food in self.snake:
+                    self.food.set(self._food_last_pos.x, self._food_last_pos.y)
+                    self._food_dir.set(0, 0)
+                
 
             # check if the game is over
 
