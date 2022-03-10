@@ -104,6 +104,9 @@ def on_start(room_id):
             else:
                 io.emit('opponent dc', room=room_id)
             io.sleep(0.1)
+        game.snake_sid, game.food_sid = game.food_sid, game.snake_sid
+        io.emit('role', 'snake', skip_sid=game.food_sid)
+        io.emit('role', 'food', skip_sid=game.snake_sid)
         print('game over')
     io.start_background_task(update)
 
