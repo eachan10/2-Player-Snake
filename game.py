@@ -5,8 +5,12 @@ import time
 
 from eventlet.semaphore import Semaphore
 
+(a,) = [1]
+
+
 class Vector:
-    __slots__ = ('x', 'y')
+    __slots__ = ("x", "y")
+
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
@@ -38,7 +42,7 @@ class SnakeGame:
     WINNING_SNAKE_LENGTH = 20
 
     def __init__(self, size=None):
-        self.size = size or (40,40)  # dimensions of game tuple/list [x, y]
+        self.size = size or (40, 40)  # dimensions of game tuple/list [x, y]
         self.snake_sid = None
         self.food_sid = None
         self.ready = [False, False]  # ready states for snake and food [snake, food]
@@ -50,7 +54,9 @@ class SnakeGame:
         self.snake = [Vector()]
         self._snake_dir = Vector(1, 0)
         self._snake_last_movement = Vector(self._snake_dir.x, self._snake_dir.y)
-        self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+        self.food = Vector(
+            random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1)
+        )
         self._food_last_pos = Vector(self.food.x, self.food.y)
         self._food_dir = Vector(0, 0)
         self._food_move_counter = 0
@@ -64,13 +70,13 @@ class SnakeGame:
         'u' 'd' 'l' 'r'
         """
         with self._lock:
-            if dir == 'u':
+            if dir == "u":
                 self._food_dir.set(0, -1)
-            elif dir == 'd':
+            elif dir == "d":
                 self._food_dir.set(0, 1)
-            elif dir == 'l':
+            elif dir == "l":
                 self._food_dir.set(-1, 0)
-            elif dir == 'r':
+            elif dir == "r":
                 self._food_dir.set(1, 0)
 
     def set_snake_dir(self, dir):
@@ -79,13 +85,13 @@ class SnakeGame:
         'u' 'd' 'l' 'r'
         """
         with self._lock:
-            if dir == 'u' and self._snake_last_movement.y != 1:
+            if dir == "u" and self._snake_last_movement.y != 1:
                 self._snake_dir.set(0, -1)
-            elif dir == 'd' and self._snake_last_movement.y != -1:
+            elif dir == "d" and self._snake_last_movement.y != -1:
                 self._snake_dir.set(0, 1)
-            elif dir == 'l' and self._snake_last_movement.x != 1:
+            elif dir == "l" and self._snake_last_movement.x != 1:
                 self._snake_dir.set(-1, 0)
-            elif dir == 'r' and self._snake_last_movement.x != -1:
+            elif dir == "r" and self._snake_last_movement.x != -1:
                 self._snake_dir.set(1, 0)
 
     def next_loop(self):
@@ -118,14 +124,16 @@ class SnakeGame:
             if self.snake[-1] == self.food:
                 # don't remove end if snake ate food
                 while self.food in self.snake:
-                    self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
+                    self.food = Vector(
+                        random.randint(0, self.size[0] - 1),
+                        random.randint(0, self.size[1] - 1),
+                    )
                     self._food_dir.set(0, 0)
             else:
                 self.snake.pop(0)
                 if self.food in self.snake:
                     self.food.set(self._food_last_pos.x, self._food_last_pos.y)
                     self._food_dir.set(0, 0)
-                
 
             # check if the game is over
 
@@ -133,23 +141,28 @@ class SnakeGame:
             # self collision of snake
             for body in self.snake[:-1]:
                 if body == head:
-                    self.winner = 'food'
+                    self.winner = "food"
 
             # check for board boundaries
             if head.x < 0 or head.x >= w or head.y < 0 or head.y >= h:
-                self.winner = 'food'
-            if self.food.x < 0 or self.food.x >= w or self.food.y < 0 or self.food.y >= h:
+                self.winner = "food"
+            if (
+                self.food.x < 0
+                or self.food.x >= w
+                or self.food.y < 0
+                or self.food.y >= h
+            ):
                 if not self.winner:
-                    self.winner = 'snake'
+                    self.winner = "snake"
                 else:
-                    self.winner = 'draw'
-                
+                    self.winner = "draw"
+
             # snake loses to clock
             if time.time() > self.end_time:
-                self.winner = 'food'
+                self.winner = "food"
             # food eaten too many times
             if len(self.snake) > self.WINNING_SNAKE_LENGTH:
-                self.winner = 'snake'
+                self.winner = "snake"
         return True
 
     def get_data(self):
@@ -158,11 +171,11 @@ class SnakeGame:
         food = [self.food.x, self.food.y]
         w, h = self.size
         d = {
-            'snake': snake,
-            'food': food,
-            'width': w,
-            'height': h,
-            'winner': self.winner,
-            'timer': self.end_time - int(time.time()),
+            "snake": snake,
+            "food": food,
+            "width": w,
+            "height": h,
+            "winner": self.winner,
+            "timer": self.end_time - int(time.time()),
         }
         return d
