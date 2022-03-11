@@ -52,7 +52,7 @@ socket.on('game update', (data) => {
         ctx.fillStyle = "#d61b1b";
         ctx.fillRect(food[0] * x_scale, food[1] * y_scale, x_scale, y_scale);
 
-        game_timer_p.innerHTML = "Frame Count: " + data.frame_count;
+        game_timer_p.innerHTML = "Time Remaining: " + Math.floor(data.timer/60) + ":" + data.timer%60;
         snake_length_p.innerHTML = "Snake Length: " + snake.length;
     } else {
         console.log("dead");

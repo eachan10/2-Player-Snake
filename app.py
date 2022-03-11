@@ -96,7 +96,7 @@ def on_start(room_id):
     emit('starting', room=room_id)
     io.sleep(5)
     print('start')
-    game.reset()
+    game.start()
     def update():
         while game.winner is None:
             if game.next_loop():
@@ -132,7 +132,7 @@ def on_disconnect():
         if game.snake_sid is None and game.food_sid is None:
             to_del.append(room_id)
         else:
-            game.reset()
+            game.ready = [False, False]
     for td in to_del:
         del app.rooms[td]
 

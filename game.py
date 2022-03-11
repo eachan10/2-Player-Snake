@@ -1,6 +1,8 @@
 # game logic
 
 import random
+import time
+
 from eventlet.semaphore import Semaphore
 
 class Vector:
@@ -32,7 +34,7 @@ class Vector:
 
 
 class SnakeGame:
-    WINNING_FRAME_COUNT = 5000
+    MAX_SECONDS = 600
     WINNING_SNAKE_LENGTH = 20
 
     def __init__(self, size=None):
@@ -42,9 +44,7 @@ class SnakeGame:
         self.ready = [False, False]  # ready states for snake and food [snake, food]
         self._lock = Semaphore()
 
-        self.reset()
-
-    def reset(self):
+    def start(self):
         # positions of each snake piece
         # last element is head
         self.snake = [Vector()]
@@ -56,7 +56,7 @@ class SnakeGame:
         self._food_move_counter = 0
         self.ready = [False, False]
         self.winner = None
-        self.frame_count = 0
+        self.end_time = int(time.time()) + self.MAX_SECONDS
 
     def set_food_dir(self, dir):
         """
@@ -98,7 +98,6 @@ class SnakeGame:
             return False
 
         with self._lock:
-            self.frame_count += 1
             w, h = self.size
 
             # move the head of the snake
@@ -146,7 +145,7 @@ class SnakeGame:
                     self.winner = 'draw'
                 
             # snake loses to clock
-            if self.frame_count > self.WINNING_FRAME_COUNT:
+            if time.time() > self.end_time:
                 self.winner = 'food'
             # food eaten too many times
             if len(self.snake) > self.WINNING_SNAKE_LENGTH:
@@ -164,6 +163,6 @@ class SnakeGame:
             'width': w,
             'height': h,
             'winner': self.winner,
-            'frame_count': self.frame_count,
+            'timer': self.end_time - int(time.time()),
         }
         return d
