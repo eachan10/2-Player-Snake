@@ -20,6 +20,11 @@ ready_button.addEventListener("click", () => {
     console.log("ready");
     socket.emit("ready", room_id);
     ready_button.disabled = true;
+    ctx.clearRect(0, 0, w, h);
+    ctx.textAlign = "center";
+    ctx.font = "24px Georgia";
+    ctx.fillStyle = "#000";
+    ctx.fillText("Waiting for opponent...", w / 2, h / 2);
 });
 
 // event fired on an interval to update the game state
@@ -70,6 +75,7 @@ socket.on('game update', (data) => {
         }
         ctx.fillText("Game Over", w / 2, h / 2 - 20);
         ctx.fillText(t, w / 2, h / 2 + 20);
+        ready_button.hidden = false;
         ready_button.disabled = false;
     }
 });
@@ -89,6 +95,7 @@ socket.on("role", (role) => {
 });
 
 socket.on("starting", () => {
+    ready_button.hidden = true;
     ctx.clearRect(0, 0, w, h);
     ctx.textAlign = "center";
     ctx.font = "24px Georgia";
@@ -98,6 +105,7 @@ socket.on("starting", () => {
 
 socket.on("opponent dc", () => {
     alive = false;
+    ready_button.hidden = false;
     ready_button.disabled = false;
     ctx.clearRect(0, 0, w, h);
     ctx.textAlign = "center";

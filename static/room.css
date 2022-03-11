@@ -1,13 +1,44 @@
-.container {
-    background-color: #999;
+.grandparent {
+    display: flex;
+    justify-content: center;
 }
 .parent {
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
 }
 #game_timer {
     float: left;
 }
-
 #snake_length {
     float: right;
+}
+.stack {
+    position: relative;
+}
+canvas {
+    border:1px solid;
+    background-color:#c8c8c8;
+}
+
+#ready_button {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    background-color: #b12929;
+    border: 2px solid #b12929;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+#ready_button:hover:enabled {
+    background-color: #c8c8c8;
+    color: #000;
+    transition-duration: 0.4s;
+}
+#ready_button:disabled {
+    opacity: 0.6;
 }
