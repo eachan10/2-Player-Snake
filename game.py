@@ -53,7 +53,7 @@ class SnakeGame:
         self.food = Vector(random.randint(0, self.size[0] - 1), random.randint(0, self.size[1] - 1))
         self._food_last_pos = Vector(self.food.x, self.food.y)
         self._food_dir = Vector(0, 0)
-        self._food_can_move = False
+        self._food_move_counter = 0
         self.ready = [False, False]
         self.winner = None
         self.frame_count = 0
@@ -106,10 +106,13 @@ class SnakeGame:
             self._snake_last_movement.set(self._snake_dir.x, self._snake_dir.y)
 
             # move the food
-            if self._food_can_move:
+            self._food_move_counter += 1
+            if self._food_move_counter <= 1:
+                pass
+            elif len(self.snake) > 4 or self._food_move_counter > 2:
                 self._food_last_pos.set(self.food.x, self.food.y)
                 self.food += self._food_dir
-            self._food_can_move = not self._food_can_move
+                self._food_move_counter = 0
 
             # move the body
             # check if food not at head
